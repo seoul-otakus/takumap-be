@@ -1,0 +1,14 @@
+# Gradle 캐시 폴더
+.gradle
+
+# IntelliJ 같은 IDE 설정 파일
+.idea
+*.iml
+
+# 빌드 결과물:
+build/
+
+# 실행가능한 JAR 파일만 포함
+!build/libs/
+!build/libs/*.jar
+build/libs/*-plain.jar
