@@ -41,5 +41,8 @@ Thumbs.db
 # Log 파일
 *.log
 
-# Build artifacts
+# Build
 *.jar
+
+# 환경변수
+.env.dev
