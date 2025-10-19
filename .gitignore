@@ -40,3 +40,6 @@ Thumbs.db
 
 # Log 파일
 *.log
+
+# Build artifacts
+*.jar
