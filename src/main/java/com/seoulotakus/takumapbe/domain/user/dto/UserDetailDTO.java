@@ -15,6 +15,7 @@ public class UserDetailDTO {
 
     private long id;
     private String nickname;
+    private String userId;
     private String password;
     private String email;
     private UserRole userRole;
