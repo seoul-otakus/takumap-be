@@ -29,8 +29,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    // AWS S3 라이브러리
-    implementation 'io.awspring.cloud:spring-cloud-starter-aws:3.1.1'
+
+    // AWS SDK BOM (버전 통일용)
+    implementation platform('software.amazon.awssdk:bom:2.27.20')
+
+    // AWS S3 클라이언트
+    implementation 'software.amazon.awssdk:s3'
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
