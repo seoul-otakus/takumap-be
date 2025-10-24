@@ -2,10 +2,9 @@ package com.seoulotakus.takumapbe.domain.user.entity;
 
 import com.seoulotakus.takumapbe.domain.user.enums.Provider;
 import com.seoulotakus.takumapbe.domain.user.enums.UserRole;
+import com.seoulotakus.takumapbe.global.entity.CommonEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.sql.Timestamp;
 
@@ -13,21 +12,44 @@ import java.sql.Timestamp;
 @Table(name = "tbl_user")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserEntity {
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
+public class UserEntity extends CommonEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @Column(name = "nickname")
     private String nickname;
+    @Column(name = "user_id")
     private String userId;
+    @Column(name = "password")
     private String password;
+    @Column(name = "email")
     private String email;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
     private UserRole userRole;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "provider")
     private Provider provider;   // 로그인 방식
+    @Column(name = "provider_id")
     private String providerId;   // 소셜 로그인 고유 식별자
+    @Column(name = "refresh_token")
     private String refreshToken;
+    @Column(name = "is_active")
     private Boolean isActive;    // 회원 논리적 삭제 시 사용
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
 
+    public UserEntity update(String nickname, String email){
+        this.nickname = nickname;
+        this.email = email;
+        super.updatedAt = new Timestamp(System.currentTimeMillis());
+
+        return this;
+    }
+
+    public void setUserId(String providerNikname) {
+        this.nickname = providerNikname;
+    }
+
+    public void setPassword(String providerPassword){
+        this.password = providerPassword;
+    }
 }

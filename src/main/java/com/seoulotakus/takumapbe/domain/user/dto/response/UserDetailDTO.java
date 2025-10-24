@@ -1,4 +1,4 @@
-package com.seoulotakus.takumapbe.domain.user.dto;
+package com.seoulotakus.takumapbe.domain.user.dto.response;
 
 import com.seoulotakus.takumapbe.domain.user.enums.Provider;
 import com.seoulotakus.takumapbe.domain.user.enums.UserRole;
