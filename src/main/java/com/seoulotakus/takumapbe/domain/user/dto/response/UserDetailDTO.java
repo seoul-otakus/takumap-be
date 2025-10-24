@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UserDetailDTO {
 
     private long id;
