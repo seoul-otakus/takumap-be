@@ -33,3 +33,11 @@ jwt:
   secret: ${SECRET_KEY}
   token-validity-in-seconds: 86400
 
+cloud:
+  aws:
+    s3:
+      bucket-name: "takumap-local-storage"
+      endpoint: "http://mysql:9000"
+    credentials:
+      access-key: minioadmin
+      secret-key: minioadmin
