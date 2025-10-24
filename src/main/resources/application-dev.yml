@@ -14,6 +14,16 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
     show-sql: true
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
+            redirect-uri: ${BASE_URL}/login/oauth2/code/google
+            scope: email, profile
+
 logging:
   level:
     org.hibernate.SQL: debug

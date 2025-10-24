@@ -1,4 +1,4 @@
-package com.seoulotakus.takumapbe.domain.user.dto;
+package com.seoulotakus.takumapbe.domain.user.dto.response;
 
 import com.seoulotakus.takumapbe.domain.user.enums.Provider;
 import com.seoulotakus.takumapbe.domain.user.enums.UserRole;
@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UserDetailDTO {
 
     private long id;

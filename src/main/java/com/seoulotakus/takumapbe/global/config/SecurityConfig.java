@@ -1,9 +1,12 @@
 package com.seoulotakus.takumapbe.global.config;
 
+import com.seoulotakus.takumapbe.global.config.oauth.PrincipalOauth2UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -13,7 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Slf4j
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity  // 스프링 시큐리티 필터(SecurityConfig)가 스프링 필터체인(기본 필터체인)에 등록이 된다.
 public class SecurityConfig {
 
 //    @Autowired
@@ -22,11 +25,8 @@ public class SecurityConfig {
 //    @Autowired
 //    private CustumLoginSuccessHandler custumLoginSuccessHandler;
 
-    /* 비밀번호 암호화 */
-    @Bean
-    public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
+    @Autowired
+    private PrincipalOauth2UserService principalOauth2UserService;
 
     /* swagger에 대한 요청 제외 */
     @Bean
@@ -46,14 +46,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain configure(HttpSecurity http) throws Exception{
         /* 요청에 대한 권한 체크 */
-        http.authorizeHttpRequests(auth -> auth
-            // 유저일 때만 들어갈 수 있는 권한 설정
-            .requestMatchers("/user/*").hasRole("USER")
+        http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
             // 권한이 없을 때도 들어갈 수 있는 경로들에 대한 접근 권한 설정
             .requestMatchers("/auth/login", "/auth/fail", "/", "/main").permitAll()
+            .requestMatchers("/api/auth/oauth/me").authenticated()
+            // 유저일 때만 들어갈 수 있는 권한 설정
+            .requestMatchers("/user/*").hasRole("USER")
             // 관리자일 때만 들어갈 수 있는 권한 설정
             .requestMatchers("/admin/*").hasRole("ADMIN")
-            .anyRequest().authenticated()
+//            .anyRequest().authenticatedz()
+            .anyRequest().permitAll()
 
             // 로그인 시 설정
         ).formLogin(login -> login
@@ -63,6 +67,7 @@ public class SecurityConfig {
             // 사용자 id 입력 필드와 사용자 Pass 입력 필드가 일치해야 들어갈 수 있다.
             .usernameParameter("userId")
             .passwordParameter("password")
+            .defaultSuccessUrl("/", true)
 //            .successHandler(custumLoginSuccessHandler)
             // 실패 시 처리할 핸들러 등록
 //            .failureHandler(authFailHandler)
@@ -78,14 +83,10 @@ public class SecurityConfig {
             .invalidateHttpSession(true)
             // 로그아웃 성공 시 URL을 main으로 보냄
             .logoutSuccessUrl("/")
-        ).sessionManagement(session -> {
-            // 세션을 최대 2개만 허용
-            session.maximumSessions(2);
-            // 세션이 만료되었을 때 로그인 페이지로 보냄
-            session.invalidSessionUrl("/auth/login");
-
-            // 악의적인 사용자가 들어와 막혔을 때
-        }). csrf(csrf -> csrf.disable());
+        ).oauth2Login(oauth2 -> oauth2
+            .userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
+            .defaultSuccessUrl("/", true)
+        );
 
         return http.build();
     }
