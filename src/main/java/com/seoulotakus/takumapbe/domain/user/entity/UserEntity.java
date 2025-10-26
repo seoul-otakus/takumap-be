@@ -2,7 +2,6 @@ package com.seoulotakus.takumapbe.domain.user.entity;
 
 import com.seoulotakus.takumapbe.domain.user.enums.Provider;
 import com.seoulotakus.takumapbe.domain.user.enums.UserRole;
-import com.seoulotakus.takumapbe.global.entity.CommonEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,8 +13,12 @@ import java.sql.Timestamp;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-public class UserEntity extends CommonEntity {
+public class UserEntity{
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private long id;
     @Column(name = "nickname")
     private String nickname;
     @Column(name = "user_id")
@@ -36,11 +39,19 @@ public class UserEntity extends CommonEntity {
     private String refreshToken;
     @Column(name = "is_active")
     private Boolean isActive;    // 회원 논리적 삭제 시 사용
+    @Column(name = "created_at")
+    private Timestamp createdAt;
+    @Column(name = "created_by")
+    private long createdBy;
+    @Column(name = "updated_at")
+    private Timestamp updatedAt;
+    @Column(name = "updated_by")
+    private long updatedBy;
 
     public UserEntity update(String nickname, String email){
         this.nickname = nickname;
         this.email = email;
-        super.updatedAt = new Timestamp(System.currentTimeMillis());
+        this.updatedAt = new Timestamp(System.currentTimeMillis());
 
         return this;
     }

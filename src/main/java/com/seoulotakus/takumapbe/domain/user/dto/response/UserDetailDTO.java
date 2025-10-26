@@ -25,5 +25,7 @@ public class UserDetailDTO {
     private String refreshToken;
     private Boolean isActive;    // 회원 논리적 삭제 시 사용
     private Timestamp createdAt;
+    private long createdBy;
     private Timestamp updatedAt;
+    private long updatedBy;
 }

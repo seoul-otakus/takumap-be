@@ -88,7 +88,7 @@ public class OAuthAttributes {
         return UserEntity.builder()
                 .nickname(name)
                 .email(email)
-                .userRole(UserRole.USER) // 기본 권한
+                .userRole(UserRole.ROLE_USER) // 기본 권한
                 .provider(provider)
                 .providerId(providerId)
                 .build();
