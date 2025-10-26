@@ -67,4 +67,10 @@ public class Review {
         this.content = content;
         this.updatedBy = updatedBy;
     }
+
+    // == 삭제용 메소드 ==
+    public void softDelete(UserEntity user) {
+        this.deletedAt = LocalDateTime.now();
+        this.updatedBy = user;
+    }
 }

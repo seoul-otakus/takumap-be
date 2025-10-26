@@ -65,4 +65,10 @@ public class FileMetadata {
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
     }
+
+    public void linkToReview(Review review, UserEntity user) {
+        this.type = "REVIEW";
+        this.uploadedBy = user;
+        this.review = review;
+    }
 }

@@ -9,4 +9,8 @@ import lombok.RequiredArgsConstructor;
 public class ImageDTO {
     private final String objectKey;
     private final String downloadUrl;
+
+    public static ImageDTO of(String objectKey, String downloadUrl) {
+        return new ImageDTO(objectKey, downloadUrl);
+    }
 }
