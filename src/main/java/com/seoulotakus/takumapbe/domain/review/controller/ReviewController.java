@@ -41,9 +41,9 @@ public class ReviewController {
         return ResponseEntity.ok(ApiResponse.success(response, "리뷰 상세 조회 성공"));
     }
 
-    @GetMapping("/{shopId}")
+    @GetMapping
     public ResponseEntity<ApiResponse<Page<ReviewSingleResponse>>> getReviewsByShopId(
-            @PathVariable Long shopId,
+            @RequestParam Long shopId,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<ReviewSingleResponse> res = reviewService.getReviewsByShopId(shopId, pageable);

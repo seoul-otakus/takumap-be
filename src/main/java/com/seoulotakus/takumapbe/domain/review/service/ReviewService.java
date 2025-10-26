@@ -146,7 +146,7 @@ public class ReviewService {
 
         // 2. 해당 파일들을 Soft Delete
         for (FileMetadata file : filesToRemove) {
-            fileMetadataRepository.delete(file);
+            file.softDelete();
         }
     }
 
