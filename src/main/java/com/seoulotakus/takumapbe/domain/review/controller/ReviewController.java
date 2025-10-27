@@ -24,6 +24,11 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
+    @GetMapping("/test")
+    public String test() {
+        return "리뷰 컨트롤러 테스트";
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<ReviewDetailResponse>> createReview(
             @Valid @RequestBody ReviewCreateRequest request,
