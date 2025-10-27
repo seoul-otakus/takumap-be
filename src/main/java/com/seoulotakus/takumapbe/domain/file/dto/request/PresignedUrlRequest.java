@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 public class PresignedUrlRequest {
-    @NotEmpty
+    @NotEmpty(message = "File Metadata는 비어있을 수 없습니다.")
     @Valid
     private List<FileMetadataRequest> fileMetadataList;
 }
