@@ -1,6 +1,7 @@
 package com.seoulotakus.takumapbe.global.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -22,9 +23,11 @@ import java.time.Duration;
 public class S3Service {
 
     private final S3Client s3Client;
-    private final String bucketName = "takumap-prod-storage";
     private final S3Presigner s3Presigner;
     private Duration presignedUrlDuration = Duration.ofHours(1); // URL 1시간동안 유효함
+
+    @Value("${cloud.aws.s3.bucket-name}")
+    private String bucketName;
 
     public S3Service(S3Client s3Client, S3Presigner s3Presigner) {
         this.s3Client = s3Client;
@@ -59,7 +62,7 @@ public class S3Service {
      * 파일 업로드용 URL (PUT) 생성
      */
     public String getUploadUrl(String objectKey, String mimeType) {
-        log.debug("Get upload url for object key: {}", objectKey);
+        log.debug("Object Key {} 업로드에 대한 URL 조회", objectKey);
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -81,7 +84,7 @@ public class S3Service {
      * 파일 다운로드/조회용 URL (GET) 생성
      */
     public String getDownloadPresignedUrl(String objectKey) {
-        log.debug("Generating Download Presigned URL for key: {}", objectKey);
+        log.debug("Object Key {}에 대한 URL 조회", objectKey);
 
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
