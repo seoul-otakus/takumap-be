@@ -119,7 +119,7 @@ public class ReviewService {
      * FileMetadata 를 Review 에 연결
      */
     private void linkFilesToReview(Review review, List<String> objectKeys, UserEntity user) {
-        if (CollectionUtils.isNotEmpty(objectKeys)) return;
+        if (CollectionUtils.isEmpty(objectKeys)) return;
 
         List<FileMetadata> filesToLink = fileMetadataRepository.findByObjectKeyIn(objectKeys);
         for (FileMetadata file : filesToLink) {
