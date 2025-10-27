@@ -71,4 +71,12 @@ public class FileMetadata {
         this.uploadedBy = user;
         this.review = review;
     }
+
+    @Builder
+    public FileMetadata(String fileName, String mimeType, String objectKey, UserEntity createdBy) {
+        this.fileName = fileName;
+        this.mimeType = mimeType;
+        this.objectKey = objectKey;
+        this.createdBy = createdBy;
+    }
 }
