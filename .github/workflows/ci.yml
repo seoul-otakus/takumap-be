@@ -29,4 +29,5 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
       - name: Build & Test
-        run: ./gradlew clean build --stacktrace
+        run: SPRING_PROFILES_ACTIVE=test ./gradlew clean build --stacktrace
+
