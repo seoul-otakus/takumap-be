@@ -1,15 +1,10 @@
-package com.seoulotakus.takumapbe.global.config.oauth;
+package com.seoulotakus.takumapbe.domain.auth.service;
 
 import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
-import com.seoulotakus.takumapbe.domain.user.enums.Provider;
-import com.seoulotakus.takumapbe.domain.user.enums.UserRole;
 import com.seoulotakus.takumapbe.domain.user.repository.UserRepository;
 import com.seoulotakus.takumapbe.global.config.PrincipalDetails;
 import com.seoulotakus.takumapbe.global.config.oauth.dto.OAuthAttributes;
-import com.seoulotakus.takumapbe.global.exception.BusinessException;
-import com.seoulotakus.takumapbe.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -19,58 +14,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
+public class PrincipalOAuth2UserService extends DefaultOAuth2UserService {
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
-
-    // 구글 로그인이 완료된 후의 뒤처리 진행
-    // 구글로부터 받은 userRequest 데이터에 대한 후처리 되는 함수
-    // 함수 종료 시 @AuthenticationPrincipal 어노테이션이 만들어진다
-//    @Override
-//    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException{
-//        System.out.println("userRequest : " + userRequest);
-//        // registrationId로 어떤 Oauth로 로그인했는지 확인 가능
-//        System.out.println("userRequest.getClientRegistration() : " + userRequest.getClientRegistration());
-//        System.out.println("userRequest.getClientRegistration().getRegistrationId() : " + userRequest.getClientRegistration().getRegistrationId());
-//        System.out.println("userRequest.getAccessToken().getTokenValue() : " + userRequest.getAccessToken().getTokenValue());
-//
-//        // provider 별로 속성을 정규화
-//        OAuthAttributes attributes = OAuthAttributes
-//
-//        OAuth2User oauth2User = super.loadUser(userRequest);
-//        // 구글로그인 버튼 클릭 -> 구글 로그인 창 -> 로그인 진행 완료 -> code 리턴 받음(OAuth-Client 라이브러리가 받음)
-//        // -> 받은 Code를 통해서 Access Token을 요청 -> Access Token을 받음 ===> 여기까지가 userRequest의 정보
-//        // userRequest 정보를 통해 -> 구글로부터 회원프로필 받아야함(이 때 loadUser 함수 호출하여 받을 수 있음)
-//        // loadUser()는 구글로부터 회원 프로필을 받아주는 역할이다.
-//        System.out.println("super.loadUser(userRequest).getAttributes() : " + oauth2User.getAttributes());
-//
-//        // oauth 로그인 정보로 회원가입 자동 진행
-//        String provider = userRequest.getClientRegistration().getClientId();
-//        String providerId = (String) oauth2User.getAttributes().get("sub");
-//        String userName = provider + "_" + providerId;  // ex) google_021348324796
-//        String password =bCryptPasswordEncoder.encode("겟인데어");
-//        String email = (String) oauth2User.getAttributes().get("email");
-//
-//        UserEntity user = userRepository.findByNickname(userName).orElseThrow(() -> BusinessException.of(ErrorCode.NOT_FOUND, "해당 유저 정보를 찾을 수 없습니다."));
-//        if(user == null){
-//            user = UserEntity.builder()
-//                    .nickname(userName)
-//                    .password(password)
-//                    .email(email)
-//                    .userRole(UserRole.USER)
-//                    .provider(Provider.GOOGLE)
-//                    .providerId(providerId)
-//                    .refreshToken(null)
-//                    .isActive(true)
-//                    .build();
-//            userRepository.save(user);
-//        }
-//
-//        return new PrincipalDetails(user, oauth2User.getAttributes());
-//    }
-//}
-
 
 @Override
 public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException{
@@ -116,3 +63,50 @@ public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2Authentic
         return userRepository.save(user);
     }
 }
+
+// 구글 로그인이 완료된 후의 뒤처리 진행
+// 구글로부터 받은 userRequest 데이터에 대한 후처리 되는 함수
+// 함수 종료 시 @AuthenticationPrincipal 어노테이션이 만들어진다
+//    @Override
+//    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException{
+//        System.out.println("userRequest : " + userRequest);
+//        // registrationId로 어떤 Oauth로 로그인했는지 확인 가능
+//        System.out.println("userRequest.getClientRegistration() : " + userRequest.getClientRegistration());
+//        System.out.println("userRequest.getClientRegistration().getRegistrationId() : " + userRequest.getClientRegistration().getRegistrationId());
+//        System.out.println("userRequest.getAccessToken().getTokenValue() : " + userRequest.getAccessToken().getTokenValue());
+//
+//        // provider 별로 속성을 정규화
+//        OAuthAttributes attributes = OAuthAttributes
+//
+//        OAuth2User oauth2User = super.loadUser(userRequest);
+//        // 구글로그인 버튼 클릭 -> 구글 로그인 창 -> 로그인 진행 완료 -> code 리턴 받음(OAuth-Client 라이브러리가 받음)
+//        // -> 받은 Code를 통해서 Access Token을 요청 -> Access Token을 받음 ===> 여기까지가 userRequest의 정보
+//        // userRequest 정보를 통해 -> 구글로부터 회원프로필 받아야함(이 때 loadUser 함수 호출하여 받을 수 있음)
+//        // loadUser()는 구글로부터 회원 프로필을 받아주는 역할이다.
+//        System.out.println("super.loadUser(userRequest).getAttributes() : " + oauth2User.getAttributes());
+//
+//        // oauth 로그인 정보로 회원가입 자동 진행
+//        String provider = userRequest.getClientRegistration().getClientId();
+//        String providerId = (String) oauth2User.getAttributes().get("sub");
+//        String userName = provider + "_" + providerId;  // ex) google_021348324796
+//        String password =bCryptPasswordEncoder.encode("겟인데어");
+//        String email = (String) oauth2User.getAttributes().get("email");
+//
+//        UserEntity user = userRepository.findByNickname(userName).orElseThrow(() -> BusinessException.of(ErrorCode.NOT_FOUND, "해당 유저 정보를 찾을 수 없습니다."));
+//        if(user == null){
+//            user = UserEntity.builder()
+//                    .nickname(userName)
+//                    .password(password)
+//                    .email(email)
+//                    .userRole(UserRole.USER)
+//                    .provider(Provider.GOOGLE)
+//                    .providerId(providerId)
+//                    .refreshToken(null)
+//                    .isActive(true)
+//                    .build();
+//            userRepository.save(user);
+//        }
+//
+//        return new PrincipalDetails(user, oauth2User.getAttributes());
+//    }
+//}

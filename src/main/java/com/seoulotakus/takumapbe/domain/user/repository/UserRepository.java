@@ -31,4 +31,10 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
              WHERE u.userId = :userId
             """)
     Optional<UserEntity> findByUserId(@Param("userId") String userId);
+
+    boolean existsByUserId(String userId);
+
+    boolean existsByNickname(String nickname);
+
+    boolean existsByEmail(String email);
 }

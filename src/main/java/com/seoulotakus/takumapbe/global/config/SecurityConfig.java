@@ -1,7 +1,7 @@
 package com.seoulotakus.takumapbe.global.config;
 
 import com.seoulotakus.takumapbe.domain.auth.filter.JwtAuthenticationFilter;
-import com.seoulotakus.takumapbe.global.config.oauth.PrincipalOauth2UserService;
+import com.seoulotakus.takumapbe.domain.auth.service.PrincipalOAuth2UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -42,7 +42,7 @@ public class SecurityConfig {
 //    private CustumLoginSuccessHandler custumLoginSuccessHandler;
 
     @Autowired
-    private PrincipalOauth2UserService principalOauth2UserService;
+    private PrincipalOAuth2UserService principalOAuth2UserService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     /* swagger에 대한 요청 제외 */
@@ -53,7 +53,7 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
-                        "/swagger-ui.html",
+                        "/swagger-ui/index.html/**",
                         "/swagger-resources/**",
                         "/webjars/**"
                 )
@@ -70,11 +70,11 @@ public class SecurityConfig {
             .csrf(CsrfConfigurer::disable)
             .httpBasic(HttpBasicConfigurer::disable)  // Basic 인증 방식 말고 Bearer 인증 방식 사용.
             .sessionManagement(sessionManagement -> sessionManagement
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )  // session 사용하지 않음
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // session 사용하지 않음
+            )
             .authorizeHttpRequests(auth -> auth
                 // 권한이 없을 때도 들어갈 수 있는 경로들에 대한 접근 권한 설정
-                .requestMatchers( "/", "/main", "/api/vi/auth/**").permitAll()
+                .requestMatchers( "/", "/main", "/api/v1/auth/**", "/api/v1/oauth2/**", "/api/v1/favicon.ico").permitAll()
     //            .requestMatchers("/api/v1/auth/oauth/me").authenticated()
                 // 유저일 때만 들어갈 수 있는 권한 설정
                 .requestMatchers("/api/v1/user/**").hasRole("USER")
@@ -89,32 +89,29 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             // 로그인 시 설정
             .formLogin(login -> login
-            // 로그인 페이지를 찾아주는 메소드
-            .loginPage("/auth/login")
-            .loginProcessingUrl("/auth/login")
-            // 사용자 id 입력 필드와 사용자 Pass 입력 필드가 일치해야 들어갈 수 있다.
-            .usernameParameter("userId")
-            .passwordParameter("password")
-            .defaultSuccessUrl("/", true)
-//            .successHandler(custumLoginSuccessHandler)
-            // 실패 시 처리할 핸들러 등록
-//            .failureHandler(authFailHandler)
-            .permitAll()
+                // 로그인 페이지를 찾아주는 메소드
+                .loginPage("/api/v1/auth/sign-in")
+                .loginProcessingUrl("/api/v1/auth/sign-in")
+                // 사용자 id 입력 필드와 사용자 Pass 입력 필드가 일치해야 들어갈 수 있다.
+                .usernameParameter("userId")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/", true)
+                .permitAll()
 
-            // 로그아웃 시 설정
-        ).logout(logout -> logout
-            // 로그아웃 요청 들어올 때
-            .logoutUrl("/auth/logout")
-            // 세션 삭제
-            .deleteCookies("JSESSIONID")
-            //
-            .invalidateHttpSession(true)
-            // 로그아웃 성공 시 URL을 main으로 보냄
-            .logoutSuccessUrl("/")
-        ).oauth2Login(oauth2 -> oauth2
-            .userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
-            .defaultSuccessUrl("/", true)
-        );
+                // 로그아웃 시 설정
+            ).logout(logout -> logout
+                // 로그아웃 요청 들어올 때
+                .logoutUrl("/api/v1/auth/sign-out")
+                // 세션 삭제
+                .deleteCookies("JSESSIONID")
+                .invalidateHttpSession(true)
+                // 로그아웃 성공 시 URL을 main으로 보냄
+                .logoutSuccessUrl("/")
+            )
+            .oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userInfo -> userInfo.userService(principalOAuth2UserService))
+                .defaultSuccessUrl("/", true)
+            );
 
         return http.build();
     }

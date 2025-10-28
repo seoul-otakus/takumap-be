@@ -1,6 +1,6 @@
 package com.seoulotakus.takumapbe.domain.auth.filter;
 
-import com.seoulotakus.takumapbe.domain.auth.jwt.JwtProvider;
+import com.seoulotakus.takumapbe.domain.auth.provider.jwt.JwtProvider;
 import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
 import com.seoulotakus.takumapbe.domain.user.repository.UserRepository;
 import com.seoulotakus.takumapbe.global.exception.BusinessException;
@@ -38,11 +38,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
 
+    private static final List<String> EXCLUDE_URLS =
+            List.of("/api/v1/auth/email-certification", "/api/v1/auth/id-check");  // 인증 불필요한 경로
+
     /**
      * 클라이언트에서 서버로 요청 들어오면 request 객체에서 bearer token 형태로 인증 정보를 받아온다.
      * 그럼 bearer token에서 token 값을 꺼내온 다음에 이 토큰을 JwtProvider의 validate()에 넘겨줘서
      * 이 토큰이 적절한 토큰인지 검사한 후 subject를 꺼내서 작업을 진행한다.
      * **/
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+
+        // EXCLUDE_URLS에 포함된 경로일 경우 필터링을 건너뛴다.
+        if(EXCLUDE_URLS.contains(path)){
+            return true;
+        }
+
+        return false;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

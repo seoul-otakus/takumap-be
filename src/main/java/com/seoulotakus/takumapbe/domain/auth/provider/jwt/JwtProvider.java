@@ -1,4 +1,4 @@
-package com.seoulotakus.takumapbe.domain.auth.jwt;
+package com.seoulotakus.takumapbe.domain.auth.provider.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwt;
