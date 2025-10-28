@@ -18,3 +18,10 @@ spring:
         # show_sql: true # SQL 로그 보고 싶으면 주석 해제
         format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
+cloud:
+  aws:
+    s3:
+      bucket-name: dummy
+    credentials:
+      access-key: test
+      secret-key: test
