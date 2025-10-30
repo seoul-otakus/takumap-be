@@ -25,7 +25,6 @@ public class SecurityConfig {
 //    @Autowired
 //    private CustumLoginSuccessHandler custumLoginSuccessHandler;
 
-    @Lazy
     @Autowired
     private PrincipalOauth2UserService principalOauth2UserService;
 
@@ -42,6 +41,13 @@ public class SecurityConfig {
                         "/webjars/**"
                 )
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations());
+    }
+
+    /* 비밀번호 암호화 */
+    // 해당 메소드의 리턴되는 오브젝트를 IoC로 등록
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
