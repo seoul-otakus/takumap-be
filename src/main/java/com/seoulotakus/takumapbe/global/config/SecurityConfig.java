@@ -25,6 +25,7 @@ public class SecurityConfig {
 //    @Autowired
 //    private CustumLoginSuccessHandler custumLoginSuccessHandler;
 
+    @Lazy
     @Autowired
     private PrincipalOauth2UserService principalOauth2UserService;
 
