@@ -1,6 +1,5 @@
 package com.seoulotakus.takumapbe.domain.file.entity;
 
-import com.seoulotakus.takumapbe.domain.review.entity.Review;
 import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -52,10 +51,8 @@ public class FileMetadata {
     @Column(name = "type", length = 20)
     private String type;
 
-    // TODO. shop_id 연결?
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_id")
-    private Review review;
+    @Column(name = "type_id")
+    private Long typeId;
 
     @PrePersist
     protected void onCreate() {
@@ -66,10 +63,16 @@ public class FileMetadata {
         this.deletedAt = LocalDateTime.now();
     }
 
-    public void linkToReview(Review review, UserEntity user) {
-        this.type = "REVIEW";
+    /**
+     * 파일(나)을 특정 도메인(리뷰, 샵 등)과 연결합니다.
+     * @param type "REVIEW", "SHOP" 등
+     * @param typeId review.getId(), shop.getId() 등
+     * @param user 업로드를 완료한 사용자
+     */
+    public void linkAssociation(String type, Long typeId, UserEntity user) {
+        this.type = type;
+        this.typeId = typeId;
         this.uploadedBy = user;
-        this.review = review;
     }
 
     @Builder
