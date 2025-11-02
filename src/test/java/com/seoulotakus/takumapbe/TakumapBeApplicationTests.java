@@ -1,5 +1,6 @@
 package com.seoulotakus.takumapbe;
 
+import com.seoulotakus.takumapbe.global.config.oauth.PrincipalOauth2UserService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,13 +21,17 @@ class TakumapBeApplicationTests {
 
         @Bean
         public S3Client s3Client() {
-
             return Mockito.mock(S3Client.class);
         }
 
         @Bean
         public AuditorAware<Long> auditorAware() {
             return () -> Optional.empty();
+        }
+
+        @Bean
+        public PrincipalOauth2UserService principalOauth2UserService() {
+            return Mockito.mock(PrincipalOauth2UserService.class);
         }
     }
 
