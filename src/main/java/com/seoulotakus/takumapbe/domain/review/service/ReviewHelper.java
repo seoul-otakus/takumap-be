@@ -12,7 +12,6 @@ import com.seoulotakus.takumapbe.global.exception.ErrorCode;
 import com.seoulotakus.takumapbe.global.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.annotations.Comment;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -50,7 +49,7 @@ public class ReviewHelper {
      * FileMetadata 과 Review 의 연결 해제 (Soft Delete)
      */
     void unlinkFilesFromReview(Review review, List<String> objectKeysToRemove) {
-        if (CollectionUtils.isNotEmpty(objectKeysToRemove)) return;
+        if (CollectionUtils.isEmpty(objectKeysToRemove)) return;
 
         // 1. 리뷰에 연결된 파일 중, 삭제할 objectKey를 가진 파일들을 조회
         List<FileMetadata> files = fileMetadataRepository.findByTypeAndTypeIdAndDeletedAtIsNull("REVIEW", review.getId());

@@ -12,7 +12,6 @@ import com.seoulotakus.takumapbe.domain.shop.repository.ShopRepository;
 import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
 import com.seoulotakus.takumapbe.global.exception.BusinessException;
 import com.seoulotakus.takumapbe.global.exception.ErrorCode;
-import com.seoulotakus.takumapbe.global.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
