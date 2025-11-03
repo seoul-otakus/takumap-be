@@ -37,4 +37,12 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     boolean existsByNickname(String nickname);
 
     boolean existsByEmail(String email);
+
+    @Query("""
+            UPDATE UserEntity u
+               SET u.refreshToken = :refreshToken
+             WHERE u.id = :id
+            """)
+    void updateRefreshToken(@Param("refreshToken") String refreshToken, @Param("id") Long id);
+
 }

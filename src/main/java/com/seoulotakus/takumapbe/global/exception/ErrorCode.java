@@ -15,7 +15,9 @@ public enum ErrorCode {
     CERTIFICATION_FAIL("이메일 인증 코드가 일치하지 않습니다.", 407, HttpStatus.BAD_REQUEST),
     DUPLICATE_NICKNAME("해당 닉네임은 중복된 닉네임입니다.", 408, HttpStatus.BAD_REQUEST),
     DUPLICATE_EMAIL("해당 이메일은 중복된 이메일입니다.", 409, HttpStatus.BAD_REQUEST),
-    LOGIN_FAIL("로그인에 실패했습니다.", 410, HttpStatus.BAD_REQUEST);
+    LOGIN_FAIL("로그인에 실패했습니다.", 410, HttpStatus.BAD_REQUEST),
+    INVALID_REFRESH_TOKEN("잘못된 Refresh Token입니다.", 411, HttpStatus.BAD_REQUEST),
+    USER_NOT_FOUND("해당 유저는 존재하지 않습니다.", 412, HttpStatus.NOT_FOUND);
 
     private final String message;
     private final int statusCode;

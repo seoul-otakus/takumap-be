@@ -33,7 +33,6 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: ${BASE_URL}/oauth2/code/google
             scope:
             - email
             - profile
@@ -67,11 +66,14 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+    org.springframework.security: debug
+    org.springframework.security.oauth2: debug
 
 jwt:
   header: ${HEADER}
   secret: ${SECRET_KEY}
-  token-validity-in-seconds: 86400
+  access-token-validity-in-seconds: 30 # 1시간
+  refresh-token-validity-in-seconds: 604800  # 7일
 
 cloud:
   aws:

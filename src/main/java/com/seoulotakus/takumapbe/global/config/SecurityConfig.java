@@ -1,7 +1,8 @@
 package com.seoulotakus.takumapbe.global.config;
 
-import com.seoulotakus.takumapbe.domain.auth.filter.JwtAuthenticationFilter;
-import com.seoulotakus.takumapbe.domain.auth.service.PrincipalOAuth2UserService;
+import com.seoulotakus.takumapbe.common.auth.filter.JwtAuthenticationFilter;
+import com.seoulotakus.takumapbe.common.oauth.handler.OAuth2SuccessHandler;
+import com.seoulotakus.takumapbe.common.oauth.service.PrincipalOAuth2UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +23,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -44,6 +47,7 @@ public class SecurityConfig {
     @Autowired
     private PrincipalOAuth2UserService principalOAuth2UserService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     /* swagger에 대한 요청 제외 */
     @Bean
@@ -74,8 +78,19 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 // 권한이 없을 때도 들어갈 수 있는 경로들에 대한 접근 권한 설정
-                .requestMatchers( "/", "/main", "/api/v1/auth/**", "/api/v1/oauth2/**", "/api/v1/favicon.ico").permitAll()
-    //            .requestMatchers("/api/v1/auth/oauth/me").authenticated()
+                .requestMatchers( "/",
+                        "/main",
+                        "/api/v1/auth/id-check",
+                        "/api/v1/auth/email-certification",
+                        "/api/v1/auth/check-certification",
+                        "/api/v1/auth/sign-up",
+                        "/api/v1/auth/sign-in",
+                        "/api/v1/auth/logout",
+                        "/api/v1/auth/refresh",
+                        "/api/v1/oauth2/**",
+                        "/api/v1/favicon.ico"
+                ).permitAll()
+                .requestMatchers("/api/v1/auth/check").authenticated()
                 // 유저일 때만 들어갈 수 있는 권한 설정
                 .requestMatchers("/api/v1/user/**").hasRole("USER")
                 // 관리자일 때만 들어갈 수 있는 권한 설정
@@ -97,20 +112,12 @@ public class SecurityConfig {
                 .passwordParameter("password")
                 .defaultSuccessUrl("/", true)
                 .permitAll()
-
-                // 로그아웃 시 설정
-            ).logout(logout -> logout
-                // 로그아웃 요청 들어올 때
-                .logoutUrl("/api/v1/auth/sign-out")
-                // 세션 삭제
-                .deleteCookies("JSESSIONID")
-                .invalidateHttpSession(true)
-                // 로그아웃 성공 시 URL을 main으로 보냄
-                .logoutSuccessUrl("/")
             )
             .oauth2Login(oauth2 -> oauth2
+                .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/oauth2"))
+                .redirectionEndpoint(endpoint -> endpoint.baseUri("/api/v1/oauth2/callback/*"))
                 .userInfoEndpoint(userInfo -> userInfo.userService(principalOAuth2UserService))
-                .defaultSuccessUrl("/", true)
+                .successHandler(oAuth2SuccessHandler)
             );
 
         return http.build();
@@ -120,9 +127,14 @@ public class SecurityConfig {
     protected CorsConfigurationSource corsConfigurationSource(){
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("*"); // 모든 출처에 대해서 허용
+        configuration.addAllowedOrigin("http://localhost:3000"); // 모든 출처에 대해서 허용
         configuration.addAllowedMethod("*"); // 모든 메소드에 대해서 허용
         configuration.addAllowedHeader("*"); // 모든 헤더에 대해서 허용
+        configuration.setAllowCredentials(true);
+
+        // 💡 필수 수정: 서버가 클라이언트에게 Set-Cookie 헤더를 노출하도록 허용합니다.
+        // Set-Cookie 헤더가 없으면 브라우저는 HTTP-Only 쿠키를 저장할 수 없습니다.
+        configuration.addExposedHeader("Set-Cookie");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
