@@ -1,22 +1,41 @@
 package com.seoulotakus.takumapbe.global.config;
 
-import com.seoulotakus.takumapbe.global.config.oauth.PrincipalOauth2UserService;
+import com.seoulotakus.takumapbe.common.auth.filter.JwtAuthenticationFilter;
+import com.seoulotakus.takumapbe.common.oauth.handler.OAuth2SuccessHandler;
+import com.seoulotakus.takumapbe.common.oauth.service.PrincipalOAuth2UserService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.io.IOException;
 
 @Slf4j
-@Configuration
+@Configurable  // @Bean 어노테이션을 등록할 수 있게 해줌
+@Configuration  // SecurityConfig 클래스가 Bean이라는 메소드를 가지고 있는 클래스임을 나타냄
 @EnableWebSecurity  // 스프링 시큐리티 필터(SecurityConfig)가 스프링 필터체인(기본 필터체인)에 등록이 된다.
+@RequiredArgsConstructor
 public class SecurityConfig {
 
 //    @Autowired
@@ -26,7 +45,9 @@ public class SecurityConfig {
 //    private CustumLoginSuccessHandler custumLoginSuccessHandler;
 
     @Autowired
-    private PrincipalOauth2UserService principalOauth2UserService;
+    private PrincipalOAuth2UserService principalOAuth2UserService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     /* swagger에 대한 요청 제외 */
     @Bean
@@ -36,7 +57,7 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
-                        "/swagger-ui.html",
+                        "/swagger-ui/index.html/**",
                         "/swagger-resources/**",
                         "/webjars/**"
                 )
@@ -44,50 +65,92 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain configure(HttpSecurity http) throws Exception{
+    protected SecurityFilterChain configure(HttpSecurity http) throws Exception{
         /* 요청에 대한 권한 체크 */
         http
-            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors
+                .configurationSource(corsConfigurationSource())
+            )
+            .csrf(CsrfConfigurer::disable)
+            .httpBasic(HttpBasicConfigurer::disable)  // Basic 인증 방식 말고 Bearer 인증 방식 사용.
+            .sessionManagement(sessionManagement -> sessionManagement
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // session 사용하지 않음
+            )
             .authorizeHttpRequests(auth -> auth
-            // 권한이 없을 때도 들어갈 수 있는 경로들에 대한 접근 권한 설정
-            .requestMatchers("/auth/login", "/auth/fail", "/", "/main").permitAll()
-            .requestMatchers("/api/auth/oauth/me").authenticated()
-            // 유저일 때만 들어갈 수 있는 권한 설정
-            .requestMatchers("/user/*").hasRole("USER")
-            // 관리자일 때만 들어갈 수 있는 권한 설정
-            .requestMatchers("/admin/*").hasRole("ADMIN")
-//            .anyRequest().authenticatedz()
-            .anyRequest().permitAll()
-
+                // 권한이 없을 때도 들어갈 수 있는 경로들에 대한 접근 권한 설정
+                .requestMatchers( "/",
+                        "/main",
+                        "/api/v1/auth/id-check",
+                        "/api/v1/auth/email-certification",
+                        "/api/v1/auth/check-certification",
+                        "/api/v1/auth/sign-up",
+                        "/api/v1/auth/sign-in",
+                        "/api/v1/auth/logout",
+                        "/api/v1/auth/refresh",
+                        "/api/v1/oauth2/**",
+                        "/api/v1/favicon.ico"
+                ).permitAll()
+                .requestMatchers("/api/v1/auth/check").authenticated()
+                // 유저일 때만 들어갈 수 있는 권한 설정
+                .requestMatchers("/api/v1/user/**").hasRole("USER")
+                // 관리자일 때만 들어갈 수 있는 권한 설정
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            )
+            // 인증 실패 시
+            .exceptionHandling(exceptionHandling -> exceptionHandling
+                    .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             // 로그인 시 설정
-        ).formLogin(login -> login
-            // 로그인 페이지를 찾아주는 메소드
-            .loginPage("/auth/login")
-            .loginProcessingUrl("/auth/login")
-            // 사용자 id 입력 필드와 사용자 Pass 입력 필드가 일치해야 들어갈 수 있다.
-            .usernameParameter("userId")
-            .passwordParameter("password")
-            .defaultSuccessUrl("/", true)
-//            .successHandler(custumLoginSuccessHandler)
-            // 실패 시 처리할 핸들러 등록
-//            .failureHandler(authFailHandler)
-            .permitAll()
-
-            // 로그아웃 시 설정
-        ).logout(logout -> logout
-            // 로그아웃 요청 들어올 때
-            .logoutUrl("/auth/logout")
-            // 세션 삭제
-            .deleteCookies("JSESSIONID")
-            //
-            .invalidateHttpSession(true)
-            // 로그아웃 성공 시 URL을 main으로 보냄
-            .logoutSuccessUrl("/")
-        ).oauth2Login(oauth2 -> oauth2
-            .userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
-            .defaultSuccessUrl("/", true)
-        );
+            .formLogin(login -> login
+                // 로그인 페이지를 찾아주는 메소드
+                .loginPage("/api/v1/auth/sign-in")
+                .loginProcessingUrl("/api/v1/auth/sign-in")
+                // 사용자 id 입력 필드와 사용자 Pass 입력 필드가 일치해야 들어갈 수 있다.
+                .usernameParameter("userId")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/", true)
+                .permitAll()
+            )
+            .oauth2Login(oauth2 -> oauth2
+                .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/oauth2"))
+                .redirectionEndpoint(endpoint -> endpoint.baseUri("/api/v1/oauth2/callback/*"))
+                .userInfoEndpoint(userInfo -> userInfo.userService(principalOAuth2UserService))
+                .successHandler(oAuth2SuccessHandler)
+            );
 
         return http.build();
+    }
+
+    @Bean
+    protected CorsConfigurationSource corsConfigurationSource(){
+
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("http://localhost:3000"); // 모든 출처에 대해서 허용
+        configuration.addAllowedMethod("*"); // 모든 메소드에 대해서 허용
+        configuration.addAllowedHeader("*"); // 모든 헤더에 대해서 허용
+        configuration.setAllowCredentials(true);
+
+        // 💡 필수 수정: 서버가 클라이언트에게 Set-Cookie 헤더를 노출하도록 허용합니다.
+        // Set-Cookie 헤더가 없으면 브라우저는 HTTP-Only 쿠키를 저장할 수 없습니다.
+        configuration.addExposedHeader("Set-Cookie");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
+}
+
+// 인가 실패 시
+class FailedAuthenticationEntryPoint implements AuthenticationEntryPoint{
+
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+        response.setContentType("application/json");
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        // {"code" : "NP", "message" : "No Permission"}
+        response.getWriter().write("{\"code\" : \"NP\", \"message\" : \"No Permission\"}");
     }
 }

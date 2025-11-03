@@ -25,6 +25,15 @@ public class GlobalExceptionHandler {
                                                 e.getErrorCode().getMessage()));
         }
 
+        // JWT 토큰 만료 예외 처리
+        /** JWT 관련 예외는 필터에서 처리되므로 주석처리함 **/
+//        @ExceptionHandler(io.jsonwebtoken.ExpiredJwtException.class)
+//        public ResponseEntity<ApiResponse<Object>> handleExpiredJwtException(io.jsonwebtoken.ExpiredJwtException e) {
+//                log.warn("Expired JWT Exception: {}", e.getMessage());
+//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                                .body(ApiResponse.fail(HttpStatus.UNAUTHORIZED, 401, "Access Token이 만료되었습니다."));
+//        }
+
         // 데이터 없음 예외 처리
         @ExceptionHandler(NoSuchElementException.class)
         public ResponseEntity<ApiResponse<Object>> handleNoSuchElementException(NoSuchElementException e) {
