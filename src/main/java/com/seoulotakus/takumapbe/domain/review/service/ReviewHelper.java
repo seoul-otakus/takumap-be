@@ -86,8 +86,15 @@ public class ReviewHelper {
         return new ReviewDetailResponse(review, images);
     }
 
+    // user.getId 타입 에러나서 아래 코드로 수정해서 올립니다. 빌드가 안되더라고요...
+//    void checkWriter(Review review, UserEntity user) {
+//        if (!review.getWriter().getId().equals(user.getId())) {
+//            throw new BusinessException(ErrorCode.FORBIDDEN);
+//        }
+//    }
+
     void checkWriter(Review review, UserEntity user) {
-        if (!review.getWriter().getId().equals(user.getId())) {
+        if (review.getWriter().getId() != user.getId()) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
     }

@@ -43,7 +43,7 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
                             .email("mock@user.com")
                             .userId("mock-user")
                             .password("password")
-                            .userRole(UserRole.ADMIN)
+                            .userRole(UserRole.ROLE_ADMIN)
                             .isActive(true)
                             .refreshToken("mock-token")
                             .provider(Provider.LOCAL)
