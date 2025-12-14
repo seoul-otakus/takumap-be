@@ -49,6 +49,9 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
+    @org.springframework.beans.factory.annotation.Value("${FRONTEND_URL:http://localhost:3000}")
+    private String frontendUrl;
+
     /* swagger에 대한 요청 제외 */
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer(){
@@ -127,7 +130,8 @@ public class SecurityConfig {
     protected CorsConfigurationSource corsConfigurationSource(){
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000"); // 모든 출처에 대해서 허용
+        configuration.addAllowedOrigin(frontendUrl); // 환경변수에서 프론트엔드 URL 가져오기
+        configuration.addAllowedOrigin("http://localhost:3000"); // 로컬 개발용
         configuration.addAllowedMethod("*"); // 모든 메소드에 대해서 허용
         configuration.addAllowedHeader("*"); // 모든 헤더에 대해서 허용
         configuration.setAllowCredentials(true);

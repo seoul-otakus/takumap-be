@@ -20,6 +20,9 @@ public class WebConfig implements WebMvcConfigurer {
     // 목업 유저 조회
     private final UserRepository userRepository;
 
+    @org.springframework.beans.factory.annotation.Value("${FRONTEND_URL:http://localhost:3000}")
+    private String frontendUrl;
+
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(new UserArgumentResolver(userRepository));
@@ -31,6 +34,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
                         "http://localhost:3000",
+                        frontendUrl,
                         "https://takumap.vercel.app",
                         "https://*.vercel.app")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")

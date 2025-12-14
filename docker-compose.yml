@@ -3,7 +3,7 @@ services:
     build: .
     container_name: takumap-be
     ports:
-      - "8080:8080"
+      - "8081:8080"
     env_file:
       - .env.dev
     depends_on:
@@ -20,12 +20,19 @@ services:
     container_name: takumap-db
     ports:
       - "3307:3306"
-    env_file:
-      - .env.dev
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=takumap_db
+      - TZ=Asia/Seoul
     volumes:
       - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+09:00
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot" ]
       interval: 10s
       timeout: 5s
       retries: 5
