@@ -1,7 +1,9 @@
 package com.seoulotakus.takumapbe.domain.shop.entity;
 
+import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -23,8 +25,9 @@ public class Shop {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "shop_category")
-    private Long shopCategory;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_category", nullable = false)
+    private Category category;
 
     @Column(name = "name", nullable = false, length = 50)
     private String name;
@@ -54,13 +57,57 @@ public class Shop {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "created_by")
-    private Long createdBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private UserEntity createdBy;
 
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "updated_by")
-    private Long updatedBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
+    private UserEntity updatedBy;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt; // Soft Delete용 필드 추가
+
+    // == 생성자 (Builder) ==
+    @Builder
+    public Shop(Category category, String name, String address, String description,
+                String phoneNumber, LocalTime openTime, LocalTime closeTime,
+                BigDecimal latitude, BigDecimal longitude, UserEntity createdBy) {
+        this.category = category;
+        this.name = name;
+        this.address = address;
+        this.description = description;
+        this.phoneNumber = phoneNumber;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.createdBy = createdBy;
+    }
+
+    // == 수정용 메소드 ==
+    public void update(Category category, String name, String address, String description,
+                       String phoneNumber, LocalTime openTime, LocalTime closeTime,
+                       BigDecimal latitude, BigDecimal longitude, UserEntity updatedBy) {
+        this.category = category;
+        this.name = name;
+        this.address = address;
+        this.description = description;
+        this.phoneNumber = phoneNumber;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.updatedBy = updatedBy;
+    }
+
+    // == 삭제용 메소드 (Soft Delete) ==
+    public void softDelete(UserEntity user) {
+        this.deletedAt = LocalDateTime.now();
+        this.updatedBy = user;
+    }
 }
