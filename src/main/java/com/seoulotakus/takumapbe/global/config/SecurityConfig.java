@@ -91,7 +91,10 @@ public class SecurityConfig {
                         "/api/v1/auth/logout",
                         "/api/v1/auth/refresh",
                         "/api/v1/oauth2/**",
-                        "/api/v1/favicon.ico"
+                        "/api/v1/favicon.ico",
+                        "/api/v1/reviews",
+                        "/api/v1/shops",
+                        "/api/v1/shops/**"
                 ).permitAll()
                 .requestMatchers("/api/v1/auth/check").authenticated()
                 // 유저일 때만 들어갈 수 있는 권한 설정
