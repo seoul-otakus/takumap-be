@@ -90,14 +90,16 @@ public class SecurityConfig {
                         "/api/v1/auth/sign-in",
                         "/api/v1/auth/logout",
                         "/api/v1/auth/refresh",
+                        "/api/v1/auth/check",
                         "/api/v1/oauth2/**",
                         "/api/v1/favicon.ico"
                 ).permitAll()
-                .requestMatchers("/api/v1/auth/check").authenticated()
                 // 유저일 때만 들어갈 수 있는 권한 설정
                 .requestMatchers("/api/v1/user/**").hasRole("USER")
                 // 관리자일 때만 들어갈 수 있는 권한 설정
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                // 즐겨찾기 API는 인증 필요
+                .requestMatchers("/api/v1/favorites/**").authenticated()
                 .anyRequest().authenticated()
             )
             // 인증 실패 시

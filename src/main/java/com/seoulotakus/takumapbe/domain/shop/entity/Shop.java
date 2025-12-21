@@ -1,5 +1,6 @@
 package com.seoulotakus.takumapbe.domain.shop.entity;
 
+import com.seoulotakus.takumapbe.domain.category.entity.Category;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -23,8 +24,9 @@ public class Shop {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "shop_category")
-    private Long shopCategory;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_category", nullable = false)
+    private Category category;
 
     @Column(name = "name", nullable = false, length = 50)
     private String name;
