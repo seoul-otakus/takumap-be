@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -35,6 +36,7 @@ import java.io.IOException;
 @Configurable  // @Bean 어노테이션을 등록할 수 있게 해줌
 @Configuration  // SecurityConfig 클래스가 Bean이라는 메소드를 가지고 있는 클래스임을 나타냄
 @EnableWebSecurity  // 스프링 시큐리티 필터(SecurityConfig)가 스프링 필터체인(기본 필터체인)에 등록이 된다.
+@EnableMethodSecurity(prePostEnabled = true)  // @PreAuthorize 어노테이션 활성화
 @RequiredArgsConstructor
 public class SecurityConfig {
 

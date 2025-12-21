@@ -4,7 +4,10 @@ import com.seoulotakus.takumapbe.common.auth.dto.request.*;
 import com.seoulotakus.takumapbe.common.auth.dto.response.AccessTokenResponseDTO;
 import com.seoulotakus.takumapbe.common.auth.dto.response.LoginResponseDTO;
 import com.seoulotakus.takumapbe.common.auth.service.AuthService;
+import com.seoulotakus.takumapbe.domain.user.dto.response.CurrentUserResponse;
+import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
 import com.seoulotakus.takumapbe.global.response.ApiResponse;
+import com.seoulotakus.takumapbe.global.util.CurrentUser;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -104,6 +107,15 @@ public class AuthController {
     @GetMapping("/check")
     public ResponseEntity<ApiResponse<?>> checkAuth(){
         return ResponseEntity.ok(ApiResponse.success(null, "인증된 사용자입니다."));
+    }
+
+    /**
+     * 현재 로그인한 사용자 정보 조회 (role 포함)
+     */
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<CurrentUserResponse>> getCurrentUser(@CurrentUser UserEntity user) {
+        CurrentUserResponse response = CurrentUserResponse.from(user);
+        return ResponseEntity.ok(ApiResponse.success(response, "사용자 정보 조회 성공"));
     }
 
 

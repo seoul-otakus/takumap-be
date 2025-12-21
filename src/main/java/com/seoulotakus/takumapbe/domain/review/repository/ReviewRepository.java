@@ -5,7 +5,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
@@ -28,4 +30,13 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findByShopIdWithWriter(Long shopId, Pageable pageable);
 
     Optional<Review> findByIdAndDeletedAtIsNull(Long reviewId);
+
+    /**
+     * 특정 유저가 작성한 모든 리뷰 조회 (관리자의 유저 삭제 시 사용)
+     */
+    @Query("""
+        SELECT r FROM Review r
+        WHERE r.writer.id = :userId
+    """)
+    List<Review> findAllByWriterId(@Param("userId") Long userId);
 }
