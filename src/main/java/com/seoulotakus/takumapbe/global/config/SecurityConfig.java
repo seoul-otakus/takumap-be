@@ -84,6 +84,7 @@ public class SecurityConfig {
                 .requestMatchers( "/",
                         "/main",
                         "/api/v1/auth/id-check",
+                        "/api/v1/auth/nickname-check",
                         "/api/v1/auth/email-certification",
                         "/api/v1/auth/check-certification",
                         "/api/v1/auth/sign-up",
@@ -95,7 +96,7 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers("/api/v1/auth/check").authenticated()
                 // 유저일 때만 들어갈 수 있는 권한 설정
-                .requestMatchers("/api/v1/user/**").hasRole("USER")
+                .requestMatchers("/api/v1/users/**").hasRole("USER")
                 // 관리자일 때만 들어갈 수 있는 권한 설정
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
@@ -105,17 +106,6 @@ public class SecurityConfig {
                     .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            // 로그인 시 설정
-            .formLogin(login -> login
-                // 로그인 페이지를 찾아주는 메소드
-                .loginPage("/api/v1/auth/sign-in")
-                .loginProcessingUrl("/api/v1/auth/sign-in")
-                // 사용자 id 입력 필드와 사용자 Pass 입력 필드가 일치해야 들어갈 수 있다.
-                .usernameParameter("userId")
-                .passwordParameter("password")
-                .defaultSuccessUrl("/", true)
-                .permitAll()
-            )
             .oauth2Login(oauth2 -> oauth2
                 .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/oauth2"))
                 .redirectionEndpoint(endpoint -> endpoint.baseUri("/api/v1/oauth2/callback/*"))

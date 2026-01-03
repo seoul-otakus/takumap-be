@@ -73,7 +73,7 @@ logging:
 jwt:
   header: ${HEADER}
   secret: ${SECRET_KEY}
-  access-token-validity-in-seconds: 30 # 1시간
+  access-token-validity-in-seconds: 3600 # 1시간
   refresh-token-validity-in-seconds: 604800  # 7일
 
 cloud:
