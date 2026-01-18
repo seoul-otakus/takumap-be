@@ -123,11 +123,18 @@ public class SecurityConfig {
     protected CorsConfigurationSource corsConfigurationSource(){
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin(frontendUrl); // 환경변수에서 프론트엔드 URL 가져오기
-        configuration.addAllowedOrigin("http://localhost:3000"); // 로컬 개발용
+        // 환경변수에서 프론트엔드 URL 가져오기
+        configuration.addAllowedOriginPattern(frontendUrl);
+        // 로컬 개발용
+        configuration.addAllowedOriginPattern("http://localhost:3000");
+        // Vercel 배포용 (와일드카드 지원)
+        configuration.addAllowedOriginPattern("https://takumap.vercel.app");
+        configuration.addAllowedOriginPattern("https://*.vercel.app");
+
         configuration.addAllowedMethod("*"); // 모든 메소드에 대해서 허용
         configuration.addAllowedHeader("*"); // 모든 헤더에 대해서 허용
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         // 💡 필수 수정: 서버가 클라이언트에게 Set-Cookie 헤더를 노출하도록 허용합니다.
         // Set-Cookie 헤더가 없으면 브라우저는 HTTP-Only 쿠키를 저장할 수 없습니다.

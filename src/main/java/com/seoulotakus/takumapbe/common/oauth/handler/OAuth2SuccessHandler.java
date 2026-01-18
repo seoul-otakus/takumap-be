@@ -9,6 +9,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
+
+    @Value("${FRONTEND_URL:http://localhost:3000}")
+    private String frontendUrl;
+
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -38,17 +45,20 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
 
+        // 프로덕션 환경 여부 확인
+        boolean isProduction = "prod".equals(activeProfile);
+
         // 쿠키 생성 및 설정
         Cookie accessTokenCookie = new Cookie("access_token", accessToken);
         accessTokenCookie.setPath("/"); // 쿠키가 전송될 경로
         accessTokenCookie.setMaxAge(60 * 60);  // 쿠키 유효 시간(1시간)
-//        accessTokenCookie.setSecure(true);  // HTTPS에서만 쿠키 전송(배포시 활성화)
+        accessTokenCookie.setSecure(isProduction);  // 프로덕션에서는 HTTPS에서만 쿠키 전송
         accessTokenCookie.setHttpOnly(true);  // JavaScript에서 쿠키 접근 불가
 
         Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);  // 7일
-//        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setSecure(isProduction);  // 프로덕션에서는 HTTPS에서만 쿠키 전송
         refreshTokenCookie.setHttpOnly(true);
 
         // 응답에 쿠키 추가
@@ -56,6 +66,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(refreshTokenCookie);
 
         // 프론트엔드 메인 페이지로 리다이렉트
-        response.sendRedirect("http://localhost:3000");
+        response.sendRedirect(frontendUrl);
     }
 }
