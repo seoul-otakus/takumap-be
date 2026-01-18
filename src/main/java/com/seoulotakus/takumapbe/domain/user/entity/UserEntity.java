@@ -65,7 +65,7 @@ public class UserEntity{
     private LocalDateTime updatedAt;
 
     @Column(name = "updated_by")
-    private long updatedBy;
+    private Long updatedBy;
 
     public UserEntity update(String nickname, String email){
         this.nickname = nickname;
