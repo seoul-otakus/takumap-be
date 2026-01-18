@@ -5,9 +5,10 @@ import com.seoulotakus.takumapbe.common.config.PrincipalDetails;
 import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
 import com.seoulotakus.takumapbe.domain.user.repository.UserRepository;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -48,22 +49,26 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 프로덕션 환경 여부 확인
         boolean isProduction = "prod".equals(activeProfile);
 
-        // 쿠키 생성 및 설정
-        Cookie accessTokenCookie = new Cookie("access_token", accessToken);
-        accessTokenCookie.setPath("/"); // 쿠키가 전송될 경로
-        accessTokenCookie.setMaxAge(60 * 60);  // 쿠키 유효 시간(1시간)
-        accessTokenCookie.setSecure(isProduction);  // 프로덕션에서는 HTTPS에서만 쿠키 전송
-        accessTokenCookie.setHttpOnly(true);  // JavaScript에서 쿠키 접근 불가
+        // ResponseCookie를 사용하여 SameSite=None 설정 (크로스 도메인 쿠키 지원)
+        ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", accessToken)
+                .path("/")
+                .maxAge(60 * 60)  // 1시간
+                .secure(isProduction)
+                .httpOnly(true)
+                .sameSite(isProduction ? "None" : "Lax")  // 크로스 도메인에서는 None 필요
+                .build();
 
-        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);  // 7일
-        refreshTokenCookie.setSecure(isProduction);  // 프로덕션에서는 HTTPS에서만 쿠키 전송
-        refreshTokenCookie.setHttpOnly(true);
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", refreshToken)
+                .path("/")
+                .maxAge(7 * 24 * 60 * 60)  // 7일
+                .secure(isProduction)
+                .httpOnly(true)
+                .sameSite(isProduction ? "None" : "Lax")
+                .build();
 
         // 응답에 쿠키 추가
-        response.addCookie(accessTokenCookie);
-        response.addCookie(refreshTokenCookie);
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
         // 프론트엔드 메인 페이지로 리다이렉트
         response.sendRedirect(frontendUrl);

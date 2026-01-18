@@ -6,10 +6,12 @@ import com.seoulotakus.takumapbe.common.auth.dto.response.LoginResponseDTO;
 import com.seoulotakus.takumapbe.common.auth.service.AuthService;
 import com.seoulotakus.takumapbe.global.response.ApiResponse;
 import org.springframework.web.bind.annotation.RequestBody;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +21,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
 
     /** id 중복 체크 **/
     @PostMapping("/id-check")
@@ -61,20 +66,27 @@ public class AuthController {
     public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody LoginRequestDTO requestDTO, HttpServletResponse response){
 
         LoginResponseDTO loginResponseDTO = authService.login(requestDTO);
+        boolean isProduction = "prod".equals(activeProfile);
 
         // Access Token을 쿠키에 설정
-        Cookie accessTokenCookie = new Cookie("access_token", loginResponseDTO.getToken());
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(30); // 30초
-        accessTokenCookie.setHttpOnly(true);
-        response.addCookie(accessTokenCookie);
+        ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", loginResponseDTO.getToken())
+                .path("/")
+                .maxAge(60 * 60)  // 1시간
+                .secure(isProduction)
+                .httpOnly(true)
+                .sameSite(isProduction ? "None" : "Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
         // Refresh Token을 쿠키에 설정
-        Cookie refreshTokenCookie = new Cookie("refresh_token", loginResponseDTO.getRefreshToken());
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(604800); // 7일
-        refreshTokenCookie.setHttpOnly(true);
-        response.addCookie(refreshTokenCookie);
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", loginResponseDTO.getRefreshToken())
+                .path("/")
+                .maxAge(7 * 24 * 60 * 60)  // 7일
+                .secure(isProduction)
+                .httpOnly(true)
+                .sameSite(isProduction ? "None" : "Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
         return ResponseEntity.ok(ApiResponse.success(loginResponseDTO, "로그인에 성공했습니다."));
     }
@@ -82,14 +94,17 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<?>> refreshAccessToken(@CookieValue("refresh_token") String refreshToken, HttpServletResponse response){
         AccessTokenResponseDTO responseDTO = authService.refreshAccessToken(refreshToken);
+        boolean isProduction = "prod".equals(activeProfile);
 
         // 새로운 Access Token을 쿠키에 설정
-        Cookie accessTokenCookie = new Cookie("access_token", responseDTO.getAccessToken());
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(60 * 60); // 1시간
-        accessTokenCookie.setHttpOnly(true);
-        // accessTokenCookie.setSecure(true); // 배포 시 활성화
-        response.addCookie(accessTokenCookie);
+        ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", responseDTO.getAccessToken())
+                .path("/")
+                .maxAge(60 * 60)  // 1시간
+                .secure(isProduction)
+                .httpOnly(true)
+                .sameSite(isProduction ? "None" : "Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
         return ResponseEntity.ok(ApiResponse.success(responseDTO, "AccessToken이 재발급되었습니다."));
     }
@@ -97,24 +112,37 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<?>> logout(HttpServletResponse response, @CookieValue("refresh_token") String refreshToken){
         authService.logout(refreshToken);
+        boolean isProduction = "prod".equals(activeProfile);
 
         // access_token 쿠키 삭제
-        Cookie accessTokenCookie = new Cookie("access_token", null);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(0);
-        response.addCookie(accessTokenCookie);
+        ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", "")
+                .path("/")
+                .maxAge(0)
+                .secure(isProduction)
+                .httpOnly(true)
+                .sameSite(isProduction ? "None" : "Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
         // refresh_token 쿠키 삭제
-        Cookie refreshTokenCookie = new Cookie("refresh_token", null);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(0);
-        response.addCookie(refreshTokenCookie);
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", "")
+                .path("/")
+                .maxAge(0)
+                .secure(isProduction)
+                .httpOnly(true)
+                .sameSite(isProduction ? "None" : "Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
         // JSESSIONID 쿠키 삭제
-        Cookie jsessionidCookie = new Cookie("JSESSIONID", null);
-        jsessionidCookie.setPath("/");
-        jsessionidCookie.setMaxAge(0);
-        response.addCookie(jsessionidCookie);
+        ResponseCookie jsessionidCookie = ResponseCookie.from("JSESSIONID", "")
+                .path("/")
+                .maxAge(0)
+                .secure(isProduction)
+                .httpOnly(true)
+                .sameSite(isProduction ? "None" : "Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, jsessionidCookie.toString());
 
         return ResponseEntity.ok(ApiResponse.success("로그아웃에 성공했습니다."));
     }
