@@ -1,5 +1,6 @@
 package com.seoulotakus.takumapbe.domain.shop.entity;
 
+import com.seoulotakus.takumapbe.domain.category.entity.Category;
 import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
