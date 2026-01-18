@@ -8,6 +8,7 @@ import com.seoulotakus.takumapbe.common.auth.dto.response.LoginResponseDTO;
 public interface AuthService {
 
     void idCheck(IdCheckRequestDTO requestDTO);
+    void nicknameCheck(NicknameCheckRequestDTO requestDTO);
     void certificateEmail(EmailCertificationRequestDTO emailRequestDTO);
     void checkCertification(CheckCertificationRequestDTO certificationRequestDTO);
     void signUp(SignUpRequestDTO signUpRequestDTO);

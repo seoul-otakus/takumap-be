@@ -86,20 +86,26 @@ public class SecurityConfig {
                 .requestMatchers( "/",
                         "/main",
                         "/api/v1/auth/id-check",
+                        "/api/v1/auth/nickname-check",
                         "/api/v1/auth/email-certification",
                         "/api/v1/auth/check-certification",
                         "/api/v1/auth/sign-up",
                         "/api/v1/auth/sign-in",
                         "/api/v1/auth/logout",
                         "/api/v1/auth/refresh",
+                        "/api/v1/auth/check",
                         "/api/v1/oauth2/**",
-                        "/api/v1/favicon.ico"
+                        "/api/v1/favicon.ico",
+                        "/api/v1/reviews",
+                        "/api/v1/shops",
+                        "/api/v1/shops/**"
                 ).permitAll()
-                .requestMatchers("/api/v1/auth/check").authenticated()
                 // 유저일 때만 들어갈 수 있는 권한 설정
-                .requestMatchers("/api/v1/user/**").hasRole("USER")
+                .requestMatchers("/api/v1/users/**").hasRole("USER")
                 // 관리자일 때만 들어갈 수 있는 권한 설정
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                // 즐겨찾기 API는 인증 필요
+                .requestMatchers("/api/v1/favorites/**").authenticated()
                 .anyRequest().authenticated()
             )
             // 인증 실패 시
@@ -107,17 +113,6 @@ public class SecurityConfig {
                     .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            // 로그인 시 설정
-            .formLogin(login -> login
-                // 로그인 페이지를 찾아주는 메소드
-                .loginPage("/api/v1/auth/sign-in")
-                .loginProcessingUrl("/api/v1/auth/sign-in")
-                // 사용자 id 입력 필드와 사용자 Pass 입력 필드가 일치해야 들어갈 수 있다.
-                .usernameParameter("userId")
-                .passwordParameter("password")
-                .defaultSuccessUrl("/", true)
-                .permitAll()
-            )
             .oauth2Login(oauth2 -> oauth2
                 .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/oauth2"))
                 .redirectionEndpoint(endpoint -> endpoint.baseUri("/api/v1/oauth2/callback/*"))
@@ -132,11 +127,18 @@ public class SecurityConfig {
     protected CorsConfigurationSource corsConfigurationSource(){
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin(frontendUrl); // 환경변수에서 프론트엔드 URL 가져오기
-        configuration.addAllowedOrigin("http://localhost:3000"); // 로컬 개발용
+        // 환경변수에서 프론트엔드 URL 가져오기
+        configuration.addAllowedOriginPattern(frontendUrl);
+        // 로컬 개발용
+        configuration.addAllowedOriginPattern("http://localhost:3000");
+        // Vercel 배포용 (와일드카드 지원)
+        configuration.addAllowedOriginPattern("https://takumap.vercel.app");
+        configuration.addAllowedOriginPattern("https://*.vercel.app");
+
         configuration.addAllowedMethod("*"); // 모든 메소드에 대해서 허용
         configuration.addAllowedHeader("*"); // 모든 헤더에 대해서 허용
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         // 💡 필수 수정: 서버가 클라이언트에게 Set-Cookie 헤더를 노출하도록 허용합니다.
         // Set-Cookie 헤더가 없으면 브라우저는 HTTP-Only 쿠키를 저장할 수 없습니다.

@@ -2,20 +2,15 @@ package com.seoulotakus.takumapbe.domain.user.repository;
 
 import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
 import com.seoulotakus.takumapbe.domain.user.enums.Provider;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
-
-//    @Query("""
-//            SELECT u
-//              FROM UserEntity u
-//             WHERE u.nickname = :nickname
-//            """)
-//    Optional<UserEntity> findByNickname(@Param("nickname") String userName);
 
     @Query("""
             SELECT u
@@ -38,6 +33,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     boolean existsByEmail(String email);
 
+    @Modifying
+    @Transactional
     @Query("""
             UPDATE UserEntity u
                SET u.refreshToken = :refreshToken

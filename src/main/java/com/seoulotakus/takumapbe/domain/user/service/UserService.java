@@ -61,4 +61,3 @@ public class UserService {
         userRepository.delete(user);
         log.info("사용자 삭제 완료 - ID: {}", userId);
     }
-}

@@ -9,11 +9,11 @@ import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
 import com.seoulotakus.takumapbe.global.response.ApiResponse;
 import com.seoulotakus.takumapbe.global.util.CurrentUser;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.support.Repositories;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,11 +31,17 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(null, "사용 가능한 아이디입니다."));
     }
 
+    /** 닉네입 중복 체크 **/
+    @PostMapping("/nickname-check")
+    public ResponseEntity<ApiResponse<?>> nicknameCheck(@RequestBody @Valid NicknameCheckRequestDTO requestDTO){
+        authService.nicknameCheck(requestDTO);
+        return ResponseEntity.ok(ApiResponse.success(null, "사용 가능한 닉네임입니다."));
+    }
+
     /** 이메일 인증 번호 발송 **/
     @PostMapping("/email-certification")
     public ResponseEntity<ApiResponse<?>> emailCertification(
             @RequestBody @Valid EmailCertificationRequestDTO requestDTO) {
-        System.out.println("😄😄😄" + requestDTO.getEmail() + " / " + requestDTO.getUserId());
         authService.certificateEmail(requestDTO);
         return ResponseEntity.ok(ApiResponse.success(null, "인증 이메일 발송에 성공했습니다."));
     }
@@ -47,18 +53,32 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(null, "이메일 인증에 성공했습니다."));
     }
 
-    /** 회원가입 **/
+    /** 자체 회원가입 **/
     @PostMapping("/sign-up")
     public ResponseEntity<ApiResponse<?>> signUp(@Valid @RequestBody SignUpRequestDTO requestDTO){
         authService.signUp(requestDTO);
         return ResponseEntity.ok(ApiResponse.success(null, "회원가입에 성공했습니다."));
     }
 
-    /** 로그인 **/
+    /** 자체 로그인 **/
     @PostMapping("/sign-in")
-    public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody LoginRequestDTO requestDTO){
+    public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody LoginRequestDTO requestDTO, HttpServletResponse response){
 
         LoginResponseDTO loginResponseDTO = authService.login(requestDTO);
+
+        // Access Token을 쿠키에 설정
+        Cookie accessTokenCookie = new Cookie("access_token", loginResponseDTO.getToken());
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(30); // 30초
+        accessTokenCookie.setHttpOnly(true);
+        response.addCookie(accessTokenCookie);
+
+        // Refresh Token을 쿠키에 설정
+        Cookie refreshTokenCookie = new Cookie("refresh_token", loginResponseDTO.getRefreshToken());
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(604800); // 7일
+        refreshTokenCookie.setHttpOnly(true);
+        response.addCookie(refreshTokenCookie);
 
         return ResponseEntity.ok(ApiResponse.success(loginResponseDTO, "로그인에 성공했습니다."));
     }
