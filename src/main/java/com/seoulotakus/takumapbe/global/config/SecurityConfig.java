@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -35,6 +36,7 @@ import java.io.IOException;
 @Configurable  // @Bean 어노테이션을 등록할 수 있게 해줌
 @Configuration  // SecurityConfig 클래스가 Bean이라는 메소드를 가지고 있는 클래스임을 나타냄
 @EnableWebSecurity  // 스프링 시큐리티 필터(SecurityConfig)가 스프링 필터체인(기본 필터체인)에 등록이 된다.
+@EnableMethodSecurity(prePostEnabled = true)  // @PreAuthorize 어노테이션 활성화
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -91,17 +93,19 @@ public class SecurityConfig {
                         "/api/v1/auth/sign-in",
                         "/api/v1/auth/logout",
                         "/api/v1/auth/refresh",
+                        "/api/v1/auth/check",
                         "/api/v1/oauth2/**",
                         "/api/v1/favicon.ico",
                         "/api/v1/reviews",
                         "/api/v1/shops",
                         "/api/v1/shops/**"
                 ).permitAll()
-                .requestMatchers("/api/v1/auth/check").authenticated()
                 // 유저일 때만 들어갈 수 있는 권한 설정
                 .requestMatchers("/api/v1/users/**").hasRole("USER")
                 // 관리자일 때만 들어갈 수 있는 권한 설정
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                // 즐겨찾기 API는 인증 필요
+                .requestMatchers("/api/v1/favorites/**").authenticated()
                 .anyRequest().authenticated()
             )
             // 인증 실패 시
@@ -123,11 +127,18 @@ public class SecurityConfig {
     protected CorsConfigurationSource corsConfigurationSource(){
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin(frontendUrl); // 환경변수에서 프론트엔드 URL 가져오기
-        configuration.addAllowedOrigin("http://localhost:3000"); // 로컬 개발용
+        // 환경변수에서 프론트엔드 URL 가져오기
+        configuration.addAllowedOriginPattern(frontendUrl);
+        // 로컬 개발용
+        configuration.addAllowedOriginPattern("http://localhost:3000");
+        // Vercel 배포용 (와일드카드 지원)
+        configuration.addAllowedOriginPattern("https://takumap.vercel.app");
+        configuration.addAllowedOriginPattern("https://*.vercel.app");
+
         configuration.addAllowedMethod("*"); // 모든 메소드에 대해서 허용
         configuration.addAllowedHeader("*"); // 모든 헤더에 대해서 허용
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         // 💡 필수 수정: 서버가 클라이언트에게 Set-Cookie 헤더를 노출하도록 허용합니다.
         // Set-Cookie 헤더가 없으면 브라우저는 HTTP-Only 쿠키를 저장할 수 없습니다.
