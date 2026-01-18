@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 
@@ -26,6 +27,7 @@ public class CertificationEntity {
     private String email;
     @Column(name = "certification_number")
     private String certificationNumber;
+    @CreationTimestamp
     @Column(name = "created_at")
     private Timestamp createdAt;
 }

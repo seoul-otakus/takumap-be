@@ -28,20 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
         resolvers.add(new UserArgumentResolver(userRepository));
     }
 
-    // CORS 설정
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOriginPatterns(
-                        "http://localhost:3000",
-                        frontendUrl,
-                        "https://takumap.vercel.app",
-                        "https://*.vercel.app")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
-                .allowedHeaders("*")
-                .allowCredentials(true)
-                .maxAge(3600);
-    }
+    // CORS 설정은 SecurityConfig에서 처리 (중복 방지)
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

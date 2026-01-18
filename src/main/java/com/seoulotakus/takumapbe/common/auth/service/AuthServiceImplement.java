@@ -8,6 +8,7 @@ import com.seoulotakus.takumapbe.common.auth.provider.jwt.JwtProvider;
 import com.seoulotakus.takumapbe.common.auth.provider.mail.EmailProvider;
 import com.seoulotakus.takumapbe.common.auth.repository.CertificationRepository;
 import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
+import com.seoulotakus.takumapbe.domain.user.enums.Provider;
 import com.seoulotakus.takumapbe.domain.user.enums.UserRole;
 import com.seoulotakus.takumapbe.domain.user.repository.UserRepository;
 import com.seoulotakus.takumapbe.global.exception.BusinessException;
@@ -36,6 +37,17 @@ public class AuthServiceImplement implements AuthService {
         boolean isExistId = userRepository.existsByUserId(userId);
         if(isExistId) {
             throw new BusinessException(ErrorCode.DUPLICATE_ID);
+        }
+    }
+
+    @Override
+    public void nicknameCheck(NicknameCheckRequestDTO requestDTO) {
+        String nickname = requestDTO.getNickname();
+
+        boolean isExistNickname = userRepository.existsByNickname(nickname);
+
+        if(isExistNickname) {
+            throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
         }
     }
 
@@ -141,6 +153,7 @@ public class AuthServiceImplement implements AuthService {
                 .nickname(signUpRequestDTO.getNickname())
                 .email(signUpRequestDTO.getEmail())
                 .userRole(UserRole.ROLE_USER)
+                .provider(Provider.LOCAL)
                 .isActive(true)
                 .build();
 
@@ -188,7 +201,6 @@ public class AuthServiceImplement implements AuthService {
     @Override
     public AccessTokenResponseDTO refreshAccessToken(String refreshToken){
         String userId = jwtProvider.validate(refreshToken);
-        System.out.println("✅✅✅" + userId);
         if (userId == null){
             System.out.println("======= INVALID_REFRESH_TOKEN =======");
             throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
