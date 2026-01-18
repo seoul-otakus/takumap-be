@@ -1,6 +1,7 @@
 package com.seoulotakus.takumapbe.domain.user.controller;
 
 import com.seoulotakus.takumapbe.domain.user.dto.request.FindIdRequestDTO;
+import com.seoulotakus.takumapbe.domain.user.dto.request.PasswordResetConfirmRequestDTO;
 import com.seoulotakus.takumapbe.domain.user.dto.request.PasswordResetRequestDTO;
 import com.seoulotakus.takumapbe.domain.user.dto.response.FindIdResponseDTO;
 import com.seoulotakus.takumapbe.domain.user.dto.response.UserInfoResponseDTO;
@@ -10,10 +11,7 @@ import com.seoulotakus.takumapbe.global.response.ApiResponse;
 import com.seoulotakus.takumapbe.global.util.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -49,6 +47,7 @@ public class UserController {
     * 4. 존재하면 해당 이메일로 임시 비밀번호 전송
     * 5. 성공 메시지 보내기
     */
+    @PostMapping("/sent-onetime-password")
     public ResponseEntity<ApiResponse<?>> sendOneTimePasswordEmail(@RequestBody PasswordResetRequestDTO requestDTO){
 
         String userId = requestDTO.getUserId();
@@ -56,14 +55,20 @@ public class UserController {
 
         userService.sendOneTimePasswordEmail(userId, email);
 
-        FindIdResponseDTO responseDTO = new FindIdResponseDTO(userId);
-        return ResponseEntity.ok(ApiResponse.success(responseDTO, "아이지 조회 성공"));
+        return ResponseEntity.ok(ApiResponse.success(null, "임시 비밀번호를 이메일로 전송했습니다."));
     }
 
     /** 비밀번호 재설정 - 임시비밀번호 확인 및 비밀번호 변경 **/
     /*
-    * 1. 임시비밀번호 맞는지 확인
-    *
-    * */
+    * 1. 임시 비밀번호 맞는지 확인
+    * 2. 임시 비밀번호가 안맞으면 에러 메시지
+    * 3. 맞으면 email에 해당하는 유저 정보 찾기
+    * 4. 새 비밀번호 설정
+    */
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<?>> resetNewPassword(@RequestBody PasswordResetConfirmRequestDTO requestDTO){
 
+        userService.resetNewPassword(requestDTO);
+        return ResponseEntity.ok(ApiResponse.success(null, "비밀번호 재설정이 완료되었습니다."));
+    }
 }

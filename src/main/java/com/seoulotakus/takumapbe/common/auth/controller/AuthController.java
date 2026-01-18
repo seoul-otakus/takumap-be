@@ -9,7 +9,6 @@ import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
 import com.seoulotakus.takumapbe.global.response.ApiResponse;
 import com.seoulotakus.takumapbe.global.util.CurrentUser;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
