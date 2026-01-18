@@ -17,7 +17,8 @@ public enum ErrorCode {
     DUPLICATE_EMAIL("해당 이메일은 중복된 이메일입니다.", 409, HttpStatus.BAD_REQUEST),
     LOGIN_FAIL("로그인에 실패했습니다.", 410, HttpStatus.BAD_REQUEST),
     INVALID_REFRESH_TOKEN("잘못된 Refresh Token입니다.", 411, HttpStatus.BAD_REQUEST),
-    USER_NOT_FOUND("해당 유저는 존재하지 않습니다.", 412, HttpStatus.NOT_FOUND);
+    USER_NOT_FOUND("해당 유저는 존재하지 않습니다.", 412, HttpStatus.NOT_FOUND),
+    EMAIL_NOT_FOUND("해당 이메일은 존재하지 않습니다.", 413, HttpStatus.NOT_FOUND);
 
     private final String message;
     private final int statusCode;
