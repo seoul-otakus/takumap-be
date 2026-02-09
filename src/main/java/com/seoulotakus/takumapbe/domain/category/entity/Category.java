@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Entity
@@ -26,20 +26,22 @@ public class Category {
 
     @NotNull
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    private LocalDate createdAt;
 
     @NotNull
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
 
     @Column(name = "updated_at")
-    private Instant updatedAt;
+    private LocalDate updatedAt;
 
     @Column(name = "updated_by")
     private Long updatedBy;
 
     @Builder
-    public Category(String name) {
+    public Category(String name, LocalDate createdAt, Long createdBy) {
         this.name = name;
+        this.createdAt = createdAt;
+        this.createdBy = createdBy;
     }
 }
