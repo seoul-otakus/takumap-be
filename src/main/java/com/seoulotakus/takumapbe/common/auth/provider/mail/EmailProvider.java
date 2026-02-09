@@ -12,9 +12,10 @@ public class EmailProvider {
 
     private final JavaMailSender javaMailSender;
 
-    private final String SUBJECT = "[TAKUMAP 서비스] 인증 메일입니다.";
+    private final String EMAIL_CHECK_SUBJECT = "[TAKUMAP 서비스] 인증 메일입니다.";
+    private final String ONETIME_PASSWORD_EMAIL = "[TAKUMAP 서비스] 임시 비밀번호입니다.";
 
-    // 메일 전송 메소드
+    // 메일 전송 메소드 - 이메일 확인 메일
     public boolean sendCertificationMail(String email, String certificationNumber){
 
         try{
@@ -25,7 +26,7 @@ public class EmailProvider {
             String htmlContent = getCertificationMessage(certificationNumber);
 
             messageHelper.setTo(email);  // 메일 받을 주소 설정
-            messageHelper.setSubject(SUBJECT);  // 이메일 제목 설정
+            messageHelper.setSubject(EMAIL_CHECK_SUBJECT);  // 이메일 제목 설정
             messageHelper.setText(htmlContent, true);  // 이메일 내용 설정
 
             // 메일 전송
@@ -48,5 +49,36 @@ public class EmailProvider {
         certificationMessage += "<h3 style='text-align: center;'>인증 코드 : <strong style='font-size: 32px;, letter-spacing: 8px;'>" + certificationNumber + "</strong></h3>";
 
         return certificationMessage;
+    }
+
+    // 메일 전송 메소드 - 임시 비밀번호 전송 메일
+    public boolean sendOneTimePasswordMail(String email, String oneTimePassword){
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
+
+            String htmlContent = getOneTimePasswordMailMessage(oneTimePassword);
+
+            messageHelper.setTo(email);
+            messageHelper.setSubject(ONETIME_PASSWORD_EMAIL);
+            messageHelper.setText(htmlContent, true);
+
+            javaMailSender.send(message);
+        } catch (Exception exception){
+            exception.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    private String getOneTimePasswordMailMessage(String oneTimePassword) {
+
+        String oneTimePasswordMessage = "";
+
+        oneTimePasswordMessage += "<h1 style='text-align: center;'>[TAKUMAP 서비스] 임시 비밀번호 메일</h1>";
+        oneTimePasswordMessage += "<h3 style='text-align: center;'>임시 비밀번호 : <strong style='font-size: 32px;, letter-spacing: 8px;'>" + oneTimePassword + "</strong></h3>";
+
+        return oneTimePasswordMessage;
     }
 }

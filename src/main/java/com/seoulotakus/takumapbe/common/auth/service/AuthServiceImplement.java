@@ -105,8 +105,11 @@ public class AuthServiceImplement implements AuthService {
         boolean isMatched = certificationEntity.getEmail().equals(email) && certificationEntity.getCertificationNumber().equals(certificationNumber);
 
         if(!isMatched){
-            throw new BusinessException(ErrorCode.NOT_FOUND);
+            throw new BusinessException(ErrorCode.CERTIFICATION_FAIL);
         }
+
+        // 인증 완료 후 해당 엔티티 삭제하기 - 보안상의 이유
+        certificationRepository.delete(certificationEntity);
     }
 
     @Override

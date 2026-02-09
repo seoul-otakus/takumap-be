@@ -42,4 +42,18 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             """)
     void updateRefreshToken(@Param("refreshToken") String refreshToken, @Param("id") Long id);
 
+    @Query("""
+        SELECT u
+          FROM UserEntity u
+         WHERE u.email = :email
+    """)
+    Optional<UserEntity> findIdByEmail(@Param("email") String email);
+
+    @Query("""
+        SELECT u
+          FROM UserEntity u
+         WHERE u.id = :userId
+           AND u.email = :email
+    """)
+    Optional<UserEntity> findByUserIdAndEmail(@Param("userId") String userId, @Param("email")String email);
 }
