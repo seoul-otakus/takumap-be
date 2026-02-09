@@ -1,11 +1,11 @@
 package com.seoulotakus.takumapbe.domain.shop.service;
 
+import com.seoulotakus.takumapbe.domain.category.repository.CategoryRepository;
 import com.seoulotakus.takumapbe.domain.shop.dto.request.ShopCreateRequest;
 import com.seoulotakus.takumapbe.domain.shop.dto.request.ShopUpdateRequest; // CreateRequest와 필드가 같다면 재사용 가능하지만 분리 추천
 import com.seoulotakus.takumapbe.domain.shop.dto.response.ShopDetailResponse;
 import com.seoulotakus.takumapbe.domain.category.entity.Category;
 import com.seoulotakus.takumapbe.domain.shop.entity.Shop;
-import com.seoulotakus.takumapbe.domain.shop.repository.CategoryRepository; // Category Repo 필요
 import com.seoulotakus.takumapbe.domain.shop.repository.ShopRepository;
 import com.seoulotakus.takumapbe.domain.user.entity.UserEntity;
 import com.seoulotakus.takumapbe.global.exception.BusinessException;
