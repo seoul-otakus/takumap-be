@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,6 +45,8 @@ public class CategoryDataLoader implements CommandLineRunner {
         for (String name : categoryNames) {
             Category category = Category.builder()
                     .name(name)
+                    .createdAt(LocalDate.now())
+                    .createdBy(1L)
                     .build();
             categoryRepository.save(category);
             log.info("카테고리 추가: {}", name);
