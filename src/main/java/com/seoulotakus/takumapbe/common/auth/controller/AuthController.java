@@ -46,6 +46,7 @@ public class AuthController {
     @PostMapping("/email-certification")
     public ResponseEntity<ApiResponse<?>> emailCertification(
             @RequestBody @Valid EmailCertificationRequestDTO requestDTO) {
+            // @ModelAttribute @Valid EmailCertificationRequestDTO requestDTO) {
         authService.certificateEmail(requestDTO);
         return ResponseEntity.ok(ApiResponse.success(null, "인증 이메일 발송에 성공했습니다."));
     }
